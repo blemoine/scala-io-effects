@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+		<title>Survivre à un monde débordant</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/black.css">
@@ -20,12 +20,639 @@
 			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
 			document.getElementsByTagName( 'head' )[0].appendChild( link );
 		</script>
+
+
 	</head>
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+				<section>
+          <h1>Survivre à un monde débordant <em>d'effets</em></h1>
+        </section>
+
+        <section>
+          <h2>Qui suis-je&nbsp;?</h2>
+          <ul>
+            <li>Benoît Lemoine</li>
+            <li>@benoit_lemoine</li>
+            <li>Développeur full-stack chez <a href="http://mnubo.com">Mnubo</a>, à Montréal</li>
+            <li><strong>Nous recrutons&nbsp;!</strong></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Effet de bord&nbsp;?</h2>
+          <p class="fragment">Tout ce qui n'est pas <em>retourné</em></p>
+        </section>
+
+        <section>
+          <h2>Exception</h2>
+          <pre><code data-trim class="scala">
+def impureParse(str: String): Int = str.toInt
+
+impureParse("test") //throw java.lang.NumberFormatException
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Mutabilité</h2>
+          <pre><code data-trim class="scala">
+var i = 1;
+def add(j: Int): Int = {
+  i += j
+  i
+}
+
+add(2) // 3
+i // also 3
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Renvoyer Unit</h2>
+          <pre><code data-trim class="scala">
+def doSomething(): Unit = ()
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>les IOs</h2>
+          <pre><code data-trim class="scala">
+scala.io.Source.fromFile("/a_file.txt").getLines
+println("Hello")
+Random.nextInt()
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Utiliser du code impure</h2>
+          <pre><code data-trim class="scala">
+def impureAdd(i: Int, j:Int): Int = {
+  println("Hello")
+  i + j
+}
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Exemple</h2>
+          <img src="images/vendingMachine.JPG" style="height:500px"/>
+        </section>
+
+        <section>
+          <h2>T(ype)D(riven)D(evelopment)</h2>
+          <pre class="fragment"><code class="scala" data-trim>
+          case class Can()
+          case class Coin()
+
+          def sell(money: Coin): Can = ???
+          </code></pre>
+          <pre class="fragment"><code class="scala" data-trim>
+          val can1 = sell(Coin())
+          val can2 = sell(Coin())
+          val can3 = sell(Coin())
+
+          val cans = List(can1, can2, can3)
+
+          println("cans", cans)
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>SDK</h2>
+          <pre><code class="scala" data-trim>
+          object ApiLowLevel {
+              // true if OK, false if it can't deliver
+              def giveACan(): Boolean = ???
+          }
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Happy Path</h2>
+          <pre><code class="scala" data-trim>
+          var stock = 10
+          def sell(money: Coin): Can = {
+            if (stock > 0) {
+              if (ApiLowLevel.giveACan()) {
+                stock = stock - 1
+                Can()
+              }
+            }
+          }
+          </code></pre>
+
+            <h3 class="fragment" style="position: absolute;top: 50%;transform: rotate(35deg);width: 100%;text-shadow: red 0 0px 70px;font-size: 2.4em;">
+              NE COMPILE PAS
+            </h3>
+
+        </section>
+
+        <section>
+          <h2>Happy Path</h2>
+          <pre><code class="scala" data-trim>
+          var stock = 10
+          def sell(money: Coin): Can = {
+            if (stock > 0) {
+              if (ApiLowLevel.giveACan()) {
+                stock = stock - 1
+                Can()
+              } else {
+                throw new Exception("Can stuck")
+              }
+            } else {
+              throw new Exception("No more stock")
+            }
+          }
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>L'appelant doit gérer les effets de bord</h2>
+          <div class="fragment">
+            <h3 >Sans nécessairement savoir qu'ils existent&nbsp;!</h3>
+          </div>
+        </section>
+
+        <section>
+          <h2>Effectful calling</h2>
+          <pre><code class="scala" data-trim>
+        val cans = mutable.MutableList[Can]()
+        val errors = mutable.MutableList[Throwable]()
+
+        try {cans += sell(Coin())} catch {case e => errors += e}
+        try {cans += sell(Coin())} catch {case e => errors += e}
+        try {cans += sell(Coin())} catch {case e => errors += e}
+
+        println("cans", cans)
+        println("errors", errors)
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Transforme l'argent en canette...</h2>
+
+          <div class="fragment">
+            <h3>...parfois</h3>
+            <img src="images/stuck.jpg" style="height:350px"/>
+          </div>
+        </section>
+
+        <section>
+          <h2>Option</h2>
+          <pre><code class="scala" data-trim>
+  var stock = 10
+  def sell(money: Coin): Option[Can] = {
+    if (stock > 0) {
+      if (ApiLowLevel.giveACan()) {
+        stock = stock - 1
+        Some(Can())
+      } else {
+        None
+      }
+    } else {
+      None
+    }
+  }
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Différentier les erreurs</h2>
+          <h3 class="fragment"><code>Try</code>&nbsp;?</h3>
+          <pre class="fragment"><code class="scale" data-trim>
+            sealed trait MachineError
+            object MachineError {
+              case object CanStuck extends MachineError
+              case object EmptyStock extends MachineError
+            }
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Either</h2>
+          <pre><code class="scala" data-trim>
+ var stock = 10
+ def sell(money: Coin): Either[MachineError, Can] = {
+   if (stock > 0) {
+     if (ApiLowLevel.giveACan()) {
+       stock = stock - 1
+       Right(Can())
+     } else {
+       Left(CanStuck)
+     }
+   } else {
+     Left(EmptyStock)
+   }
+ }
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Either</h2>
+          <pre><code class="scala" data-trim>
+            val maybeCans: Seq[Either[MachineError, Can]] = List(
+              sell(Coin()),
+              sell(Coin()),
+              sell(Coin())
+            )
+            val cans: Seq[Can] = maybeCans.collect {
+              case Right(can) => can
+            }
+            val errors: Seq[MachineError] = maybeCans.collect {
+              case Left(e) => e
+            }
+            println("cans", cans)
+            println("errors", errors)
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Mutabilité</h2>
+          <ul>
+            <li>Debugging</li>
+            <li>Parallélisme</li>
+          </ul>
+          <p>
+          TODO PHOTOSHOP d'une vending machine avec 2 coté / parallelisme?
+        </p>
+        </section>
+
+        <section>
+          <h2>Passer l'état en paramètre</h2>
+<pre><code class="scala" data-trim>
+  type CanOrErr = Either[MachineError, Can]
+
+  def sell(money: Coin)(stock: Int): (Int, CanOrErr) = {
+    if (stock > 0) {
+      if (ApiLowLevel.giveACan()) {
+        (stock - 1, Right(Can()))
+      } else {
+        (stock, Left(CanStuck))
+      }
+    } else {
+      (stock, Left(EmptyStock))
+    }
+  }
+  </code></pre>
+        </section>
+
+        <section>
+            <h2>Mutabilité</h2>
+            <pre><code class="scala" data-trim>
+  val (stock1, maybeCan1) = sell(Coin())(10)
+  val (stock2, maybeCan2) = sell(Coin())(stock1)
+  val (stock3, maybeCan3) = sell(Coin())(stock2)
+
+  val maybeCans = List(maybeCan1, maybeCan2, maybeCan3)
+  val cans = maybeCans.collect {
+    case Right(snack) => snack
+  }
+  val errors = maybeCans.collect {
+    case Left(e) => e
+  }
+  println("cans", cans)
+  println("errors", errors)
+  println("stock", stock3)
+            </code></pre>
+        </section>
+
+        <section>
+          <h2>Généralisation</h2>
+<pre class="fragment"><code class="scala" data-trim>
+  type State[S, T] ~ (S) => (S, T)
+</code></pre>
+        </section>
+
+        <section>
+          <h2>Cats</h2>
+          <a href="https://typelevel.org/cats/">https://typelevel.org/cats/</a>
+          <pre><code class="scala" data-trim>
+import cats.data.State
+
+def sell(coin: Coin): State[Int, CanOrErr] = State { stock =>
+  if (stock > 0) {
+    if (ApiLowLevel.giveACan()) {
+      (stock - 1, Right(Can()))
+    } else {
+      (stock, Left(CanStuck))
+    }
+  } else {
+    (stock, Left(EmptyStock))
+  }
+}
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>State</h2>
+            <pre><code class="scala" data-trim>
+   val state: State[Int, List[CanOrErr]] = for {
+     maybeCan1 <- sell(Coin())
+     maybeCan2 <- sell(Coin())
+     maybeCan3 <- sell(Coin())
+   } yield List(maybeCan1, maybeCan2, maybeCan3)
+
+   val (stock, maybeCans) = state.run(10).value
+   val cans = maybeCans.collect { case Right(can) => can }
+   val errors = maybeCans.collect { case Left(e) => e }
+
+   println("cans", cans)
+   println("errors", errors)
+   println("stock", stock)
+            </code></pre>
+        </section>
+
+        <section>
+          <h2>Description / Interpretation</h2>
+          <img src="images/recipe.jpg" style="width:600px"/>
+        </section>
+
+        <section>
+          <h2>Les IOs</h2>
+          <pre><code class="scala" data-trim>
+            type IO[A] ~ (RealWorld) => (RealWorld, A)
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Controverse</h2>
+          <ul>
+            <li><code>IO</code> est un marqueur optionnel</li>
+            <li>
+              <a href="https://webcache.googleusercontent.com/search?q=cache:Azjq01tGknsJ:https://groups.google.com/d/topic/scala-debate/xYlUlQAnkmE+&cd=2&hl=en&ct=clnk&gl=il">
+                Chaque ligne est un IO
+              </a>, car Scala est strict
+              </li>
+            <li>etc.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Side Effect ~ type</h2>
+          <ul>
+            <li class="fragment">calcul pouvant s'arreter <code class="scala" style="background:#3f3f3f">Option</code></li>
+            <li class="fragment">calcul pouvant s'arreter avec une raison <code class="scala" style="background:#3f3f3f">Either</code></li>
+            <li class="fragment">calcul asynchrone <code class="scala" style="background:#3f3f3f">Future</code></li>
+            <li class="fragment">calcul écrivant quelque part <code class="scala" style="background:#3f3f3f">cats.data.Writer</code></li>
+            <li class="fragment">calcul lisant une configuration <code class="scala" style="background:#3f3f3f">cats.data.Reader</code></li>
+            <li class="fragment">calcul modifiant un état interne <code class="scala" style="background:#3f3f3f">cats.data.State</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Gérer les piles d'effet</h2>
+          <img src="images/stack.jpeg" />
+        </section>
+
+        <section>
+            <h2>Cycle sans fin...</h2>
+            Faire le cycle avec des photos
+            <!--
+          <svg width="640" height="317" xmlns="http://www.w3.org/2000/svg" style="background:#3f3f3f">
+           <defs>
+            <filter y="-0.252" x="-0.07875" width="1.1575" id="filter_blur" height="1.504">
+             <feGaussianBlur stdDeviation="4.2" id="feGaussianBlur3780"/>
+            </filter>
+           </defs>
+           <title>blockdiag</title>
+           <desc/>
+           <g>
+            <title>background</title>
+            <rect fill="none" id="canvas_background" height="319" width="642" y="-1" x="-1"/>
+           </g>
+           <g>
+            <title>Layer 1</title>
+            <rect id="svg_1" filter="url(#filter_blur)" opacity="0.7" y="50" x="260" width="128" stroke="rgb(0,0,0)" height="40" fill="rgb(0,0,0)"/>
+            <rect id="svg_2" filter="url(#filter_blur)" opacity="0.7" y="178" x="78" width="128" stroke="rgb(0,0,0)" height="40" fill="rgb(0,0,0)"/>
+            <rect id="svg_3" filter="url(#filter_blur)" opacity="0.7" y="178" x="446" width="128" stroke="rgb(0,0,0)" height="40" fill="rgb(0,0,0)"/>
+            <rect id="svg_4" y="44" x="257" width="128" stroke="rgb(0,0,0)" height="40" fill="rgb(255,255,255)"/>
+            <text id="svg_5" y="70" x="321" text-anchor="middle" font-weight="normal" font-style="normal" font-size="11" font-family="sans-serif" fill="rgb(0,0,0)">Pocket</text>
+            <rect id="svg_6" y="172" x="75" width="128" stroke="rgb(0,0,0)" height="40" fill="rgb(255,255,255)"/>
+            <text id="svg_7" y="198" x="139" text-anchor="middle" font-weight="normal" font-style="normal" font-size="11" font-family="sans-serif" fill="rgb(0,0,0)">VendingMachine</text>
+            <rect id="svg_8" y="172" x="443" width="128" stroke="rgb(0,0,0)" height="40" fill="rgb(255,255,255)"/>
+            <text id="svg_9" y="198" x="507" text-anchor="middle" font-weight="normal" font-style="normal" font-size="11" font-family="sans-serif" fill="rgb(0,0,0)">Trash</text>
+            <path stroke="rgb(255,255,255)" transform="rotate(-42.58049011230469 199.2984161376953,114.10415649414064) " id="svg_10" fill="none" d="m122.069212,114.104157l154.45841,0"/>
+            <polygon transform="rotate(133.17379760742188 140,166.99999999999997) " stroke="rgb(255,255,255)" id="svg_11" points="145,167 135,163 135,171 145,167 " fill="rgb(0,0,0)"/>
+            <path stroke="rgb(255,255,255)" id="svg_12" fill="none" d="m204,191l224.999996,0"/>
+            <polygon stroke="rgb(255,255,255)" id="svg_13" points="438,191 427,187 427,195 438,191 " fill="rgb(0,0,0)"/>
+            <rect id="svg_19" y="77" x="166" width="41" stroke="rgb(0,0,0)" height="15" fill="white"/>
+            <text id="svg_20" y="90" x="186" text-anchor="middle" font-weight="normal" font-style="normal" font-size="11" font-family="sans-serif" fill="rgb(0,0,0)">Coin</text>
+            <rect id="svg_21" y="166" x="306" width="35" stroke="rgb(0,0,0)" height="15" fill="white"/>
+            <text id="svg_22" y="179" x="323" text-anchor="middle" font-weight="normal" font-style="normal" font-size="11" font-family="sans-serif" fill="rgb(0,0,0)">Can</text>
+            <rect id="svg_26" y="75" x="446" width="41" stroke="rgb(0,0,0)" height="15" fill="white"/>
+            <text id="svg_27" y="88" x="466" text-anchor="middle" font-weight="normal" font-style="normal" font-size="11" font-family="sans-serif" fill="rgb(0,0,0)">Coin</text>
+            <path stroke="rgb(255,255,255)" transform="rotate(-135.16400146484375 443.5751037597656,117.95498657226561) " id="svg_25" fill="none" d="m369.205561,117.954991l148.73908,0"/>
+            <polygon transform="rotate(-138.05319213867188 389.9025573730468,64.98808288574222) " stroke="rgb(255,255,255)" id="svg_28" points="394.9025573730469,64.98808288574219 384.9025573730469,60.98808288574219 384.9025573730469,68.98808288574219 394.9025573730469,64.98808288574219 " fill="rgb(0,0,0)"/>
+           </g>
+          </svg>
+        -->
+        </section>
+
+        <section>
+          <pre><code class="scala" data-trim>
+ object Pocket {
+   def getCoin(): Option[Coin] = ???
+ }
+
+ object Api {
+   def getACan(coin: Coin): Future[Option[Can]] = ???
+ }
+
+ object Trash {
+   def recycle(can: Can): Future[Option[Coin]] = ???
+ }
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Cycle sans fin</h2>
+          <pre><code class="scala" data-trim>
+val eventualMaybeCoin: Future[Option[Coin]] = {
+  Pocket.getCoin() match {
+    case Some(coin) => Api.getACan(coin).flatMap {
+      case Some(can) => Trash.recycle(can)
+      case None => Future(None)
+    }
+    case None => Future(None)
+  }
+}
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>OptionT</h2>
+          <pre><code class="scala" data-trim>
+            type OptionT[M[_], A] ~ M[Option[A]]
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>OptionT</h2>
+          <!--
+          import cats.implicits._
+          import cats.data.OptionT
+          -->
+          <pre><code class="scala" data-trim>
+                  val eventualMaybeCoin: OptionT[Future, Coin] = for {
+                    coin <- OptionT.fromOption[Future](Pocket.getCoin())
+                    snack <- OptionT(Api.getASnack(coin))
+                    newCoin <- OptionT(Trash.recycle(snack))
+                  } yield {
+                    newCoin
+                  }
+
+                  val r: Future[Option[Coin]] = eventualMaybeCoin.value
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Monad Transformers</h2>
+          <ul>
+            <li>Un type monadique</li>
+            <li>représentant la combinaison d'un type représentant un effet</li>
+            <li>avec un type monadique</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h2>Monad Transformers</h2>
+          <ul>
+            <li>OptionT</li>
+            <li>EitherT</li>
+            <li>StateT</li>
+            <li>ReaderT</li>
+            <li>WriterT</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Plus de 2 effets ?</h2>
+<!--
+import cats.implicits._
+ import cats.data.OptionT
+ import cats.data.WriterT
+-->
+<pre><code data-trim class="scala">
+
+type OptionF[A] = OptionT[Future, A]
+val maybeCoin = OptionT.fromOption[Future](Pocket.getCoin())
+val recipe: WriterT[OptionF, String, Coin] = for {
+  coin <- WriterT.lift[OptionF, String, Coin](maybeCoin)
+  _ <- WriterT.tell[OptionF, String](s"got Coin $coin")
+  snack <- WriterT.lift(OptionT(Api.getACan(coin)))
+  _ <- WriterT.tell[OptionF, String](s"got Snack $snack")
+  newCoin <- WriterT.lift(OptionT(Trash.recycle(snack)))
+  _ <- WriterT.tell[OptionF, String](s"recycled Snack $snack")
+} yield newCoin
+
+val r: Future[Option[(String, Coin)]] = recipe.run.value
+
+</code></pre>
+        </section>
+
+        <section>
+          <h2>Extensible effect</h2>
+          <ul>
+            <li>Manipulation simple dans un <code>for</code></li>
+            <li>Les effets s'accumulent durant la description</li>
+            <li>A l'éxecution chaque effet se transforme en type dans le résultat</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Exemple</h2>
+          <ul>
+           <li class="fragment"> Eff[(Option), Coin]</li>
+           <li class="fragment"> Eff[(Writer[String, ?], Option), Coin]</li>
+           <li class="fragment"> Eff[(Writer[String, ?], Option, Async), Can]</li>
+           <li class="fragment"> Eff[(Writer[String, ?], Async), Option[Can]]</li>
+           <li class="fragment"> Eff[(Async), (List[String], Option[Can])]</li>
+           <li class="fragment"> Eff[(), Future[(List[String], Option[Can])]]</li>
+           <li class="fragment"> Future[(List[String], Option[Can])]</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3><a href="https://github.com/atnos-org/eff">https://github.com/atnos-org/eff</a></h3>
+<pre><code data-trim class="scala">
+type EitherStr[A] = Either[String, A]
+type _eitherStr[R] = EitherStr |= R
+
+def add[R : _option : _eitherStr](
+   maybeInt: Option[Int],
+   intOrStr: Either[String, Int]): Eff[R, Int] = for {
+  a <- fromOption(maybeInt)
+  b <- fromEither(intOrStr)
+} yield a + b
+
+type Stack = Fx.fx2[Option, EitherStr]
+add[Stack](Some(1), Right(2)).runOption.runEither.run
+//Right(Some(3))
+add[Stack](Some(1), Left("err")).runOption.runEither.run
+//Left("err")
+
+</code></pre>
+
+  <aside class="notes">
+    <ul>
+      <li>Fx.fxn</li>
+      <li> |= R</li>
+      <li>Type explicit</li>
+      <li> les run</li>
+    </ul>
+  </aside>
+
+        </section>
+
+        <section>
+          <h2>Exemple</h2>
+          <pre><code class="scala" data-trim>
+            type WriterStr[A] = Writer[String, A]
+            type _writerStr[R] = WriterStr |= R
+            type Stack = Fx.fx3[WriterStr, Option, TimedFuture]
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Exemple</h2>
+
+          <!--
+          import org.atnos.eff._, all._, syntax.all._
+           import org.atnos.eff.future._
+           import org.atnos.eff.syntax.future._
+           implicit val scheduler = ExecutorServices.schedulerFromGlobalExecutionContext
+         -->
+<pre><code class="scala" data-trim>
+   def recipe[R : _writerStr : _option : _future]: Eff[R, Coin] =
+     for {
+       coin <- fromOption(Pocket.getCoin())
+       _ <- tell("got Coin " + coin)
+       maybeCan <- fromFuture(Api.getACan(coin))
+       can <- fromOption(maybeCan)
+       _ <- tell("got Can " + can)
+       maybeNewCoin <- fromFuture(Trash.recycle(can))
+       newCoin <- fromOption(maybeNewCoin)
+       _ <- tell("recycled Can " + can)
+     } yield newCoin
+
+   val result: Future[Option[(Coin, List[String])]] =
+     recipe[Stack].runWriter.runOption.runAsync
+</code></pre>
+        </section>
+
+        <section>
+          <h2>Conclusion</h2>
+          <p>Les effets de bords :</p>
+          <ul>
+            <li>Source de surprise - et donc d'erreur -</li>
+            <li>Encodable dans des types</li>
+            <li>Monad Transformers et Eff</li>
+          </ul>
+        </section>
 			</div>
 		</div>
 
@@ -37,6 +664,7 @@
 			// - https://github.com/hakimel/reveal.js#configuration
 			// - https://github.com/hakimel/reveal.js#dependencies
 			Reveal.initialize({
+        history: true,
 				dependencies: [
 					{ src: 'plugin/markdown/marked.js' },
 					{ src: 'plugin/markdown/markdown.js' },
