@@ -41,7 +41,7 @@
         </section>
 
         <section>
-          <h2>Effet de bord&nbsp;?</h2>
+          <h2>Effet de bord&nbsp;<span class="fragment">?</span></h2>
           <p class="fragment">Tout ce qui n'est pas <em>retourné</em></p>
         </section>
 
@@ -69,18 +69,18 @@ i // also 3
         </section>
 
         <section>
-          <h2>Renvoyer Unit</h2>
-          <pre><code data-trim class="scala">
-def doSomething(): Unit = ()
-          </code></pre>
-        </section>
-
-        <section>
           <h2>les IOs</h2>
           <pre><code data-trim class="scala">
 scala.io.Source.fromFile("/a_file.txt").getLines
 println("Hello")
 Random.nextInt()
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Renvoyer Unit</h2>
+          <pre><code data-trim class="scala">
+def doSomething(): Unit = ()
           </code></pre>
         </section>
 
@@ -187,6 +187,11 @@ def impureAdd(i: Int, j:Int): Int = {
         println("cans", cans)
         println("errors", errors)
           </code></pre>
+        </section>
+
+        <section>
+          <h2>Se débarasser des effets de bords</h2>
+          <img src="images/aquatabs.jpg" style="height:400px"/>
         </section>
 
         <section>
@@ -371,6 +376,7 @@ def sell(coin: Coin): State[Int, CanOrErr] = State { stock =>
 
         <section>
           <h2>Les IOs</h2>
+          <a href="https://github.com/typelevel/cats-effect">https://github.com/typelevel/cats-effect</a>
           <pre><code class="scala" data-trim>
             type IO[A] ~ (RealWorld) => (RealWorld, A)
           </code></pre>
@@ -392,12 +398,12 @@ def sell(coin: Coin): State[Int, CanOrErr] = State { stock =>
         <section>
           <h2>Side Effect ~ type</h2>
           <ul>
-            <li class="fragment">calcul pouvant s'arreter <code class="scala" style="background:#3f3f3f">Option</code></li>
-            <li class="fragment">calcul pouvant s'arreter avec une raison <code class="scala" style="background:#3f3f3f">Either</code></li>
-            <li class="fragment">calcul asynchrone <code class="scala" style="background:#3f3f3f">Future</code></li>
-            <li class="fragment">calcul écrivant quelque part <code class="scala" style="background:#3f3f3f">cats.data.Writer</code></li>
-            <li class="fragment">calcul lisant une configuration <code class="scala" style="background:#3f3f3f">cats.data.Reader</code></li>
-            <li class="fragment">calcul modifiant un état interne <code class="scala" style="background:#3f3f3f">cats.data.State</code></li>
+            <li class="fragment"><code class="scala" style="background:#3f3f3f">Option</code>&nbsp;: arrêt prématuré</li>
+            <li class="fragment"><code class="scala" style="background:#3f3f3f">Either</code>&nbsp;: arrêt prématuré avec une raison</li>
+            <li class="fragment"><code class="scala" style="background:#3f3f3f">Future</code>&nbsp;: asynchronisme</li>
+            <li class="fragment"><code class="scala" style="background:#3f3f3f">cats.data.Writer</code>:&nbsp;: écrire quelque part</li>
+            <li class="fragment"><code class="scala" style="background:#3f3f3f">cats.data.Reader</code>&nbsp;: lire de quelque part</li>
+            <li class="fragment"><code class="scala" style="background:#3f3f3f">cats.data.State</code>&nbsp;: modifier un état interne</li>
           </ul>
         </section>
 
@@ -408,46 +414,8 @@ def sell(coin: Coin): State[Int, CanOrErr] = State { stock =>
 
         <section>
             <h2>Cycle sans fin...</h2>
-            Faire le cycle avec des photos
-            <!--
-          <svg width="640" height="317" xmlns="http://www.w3.org/2000/svg" style="background:#3f3f3f">
-           <defs>
-            <filter y="-0.252" x="-0.07875" width="1.1575" id="filter_blur" height="1.504">
-             <feGaussianBlur stdDeviation="4.2" id="feGaussianBlur3780"/>
-            </filter>
-           </defs>
-           <title>blockdiag</title>
-           <desc/>
-           <g>
-            <title>background</title>
-            <rect fill="none" id="canvas_background" height="319" width="642" y="-1" x="-1"/>
-           </g>
-           <g>
-            <title>Layer 1</title>
-            <rect id="svg_1" filter="url(#filter_blur)" opacity="0.7" y="50" x="260" width="128" stroke="rgb(0,0,0)" height="40" fill="rgb(0,0,0)"/>
-            <rect id="svg_2" filter="url(#filter_blur)" opacity="0.7" y="178" x="78" width="128" stroke="rgb(0,0,0)" height="40" fill="rgb(0,0,0)"/>
-            <rect id="svg_3" filter="url(#filter_blur)" opacity="0.7" y="178" x="446" width="128" stroke="rgb(0,0,0)" height="40" fill="rgb(0,0,0)"/>
-            <rect id="svg_4" y="44" x="257" width="128" stroke="rgb(0,0,0)" height="40" fill="rgb(255,255,255)"/>
-            <text id="svg_5" y="70" x="321" text-anchor="middle" font-weight="normal" font-style="normal" font-size="11" font-family="sans-serif" fill="rgb(0,0,0)">Pocket</text>
-            <rect id="svg_6" y="172" x="75" width="128" stroke="rgb(0,0,0)" height="40" fill="rgb(255,255,255)"/>
-            <text id="svg_7" y="198" x="139" text-anchor="middle" font-weight="normal" font-style="normal" font-size="11" font-family="sans-serif" fill="rgb(0,0,0)">VendingMachine</text>
-            <rect id="svg_8" y="172" x="443" width="128" stroke="rgb(0,0,0)" height="40" fill="rgb(255,255,255)"/>
-            <text id="svg_9" y="198" x="507" text-anchor="middle" font-weight="normal" font-style="normal" font-size="11" font-family="sans-serif" fill="rgb(0,0,0)">Trash</text>
-            <path stroke="rgb(255,255,255)" transform="rotate(-42.58049011230469 199.2984161376953,114.10415649414064) " id="svg_10" fill="none" d="m122.069212,114.104157l154.45841,0"/>
-            <polygon transform="rotate(133.17379760742188 140,166.99999999999997) " stroke="rgb(255,255,255)" id="svg_11" points="145,167 135,163 135,171 145,167 " fill="rgb(0,0,0)"/>
-            <path stroke="rgb(255,255,255)" id="svg_12" fill="none" d="m204,191l224.999996,0"/>
-            <polygon stroke="rgb(255,255,255)" id="svg_13" points="438,191 427,187 427,195 438,191 " fill="rgb(0,0,0)"/>
-            <rect id="svg_19" y="77" x="166" width="41" stroke="rgb(0,0,0)" height="15" fill="white"/>
-            <text id="svg_20" y="90" x="186" text-anchor="middle" font-weight="normal" font-style="normal" font-size="11" font-family="sans-serif" fill="rgb(0,0,0)">Coin</text>
-            <rect id="svg_21" y="166" x="306" width="35" stroke="rgb(0,0,0)" height="15" fill="white"/>
-            <text id="svg_22" y="179" x="323" text-anchor="middle" font-weight="normal" font-style="normal" font-size="11" font-family="sans-serif" fill="rgb(0,0,0)">Can</text>
-            <rect id="svg_26" y="75" x="446" width="41" stroke="rgb(0,0,0)" height="15" fill="white"/>
-            <text id="svg_27" y="88" x="466" text-anchor="middle" font-weight="normal" font-style="normal" font-size="11" font-family="sans-serif" fill="rgb(0,0,0)">Coin</text>
-            <path stroke="rgb(255,255,255)" transform="rotate(-135.16400146484375 443.5751037597656,117.95498657226561) " id="svg_25" fill="none" d="m369.205561,117.954991l148.73908,0"/>
-            <polygon transform="rotate(-138.05319213867188 389.9025573730468,64.98808288574222) " stroke="rgb(255,255,255)" id="svg_28" points="394.9025573730469,64.98808288574219 384.9025573730469,60.98808288574219 384.9025573730469,68.98808288574219 394.9025573730469,64.98808288574219 " fill="rgb(0,0,0)"/>
-           </g>
-          </svg>
-        -->
+          <img src="images/endlessCycle.png" style="height:400px"/>
+
         </section>
 
         <section>
@@ -468,7 +436,6 @@ def sell(coin: Coin): State[Int, CanOrErr] = State { stock =>
 
 
         <section>
-          <h2>Cycle sans fin</h2>
           <pre><code class="scala" data-trim>
 val eventualMaybeCoin: Future[Option[Coin]] = {
   Pocket.getCoin() match {
@@ -542,11 +509,11 @@ type OptionF[A] = OptionT[Future, A]
 val maybeCoin = OptionT.fromOption[Future](Pocket.getCoin())
 val recipe: WriterT[OptionF, String, Coin] = for {
   coin <- WriterT.lift[OptionF, String, Coin](maybeCoin)
-  _ <- WriterT.tell[OptionF, String](s"got Coin $coin")
+  _ <- WriterT.tell[OptionF, String](s"got $coin;")
   snack <- WriterT.lift(OptionT(Api.getACan(coin)))
-  _ <- WriterT.tell[OptionF, String](s"got Snack $snack")
+  _ <- WriterT.tell[OptionF, String](s"got $snack;")
   newCoin <- WriterT.lift(OptionT(Trash.recycle(snack)))
-  _ <- WriterT.tell[OptionF, String](s"recycled Snack $snack")
+  _ <- WriterT.tell[OptionF, String](s"recycled $snack;")
 } yield newCoin
 
 val r: Future[Option[(String, Coin)]] = recipe.run.value
@@ -645,13 +612,17 @@ add[Stack](Some(1), Left("err")).runOption.runEither.run
         </section>
 
         <section>
-          <h2>Conclusion</h2>
-          <p>Les effets de bords :</p>
+          <h2>Les effets de bords :</h2>
           <ul>
-            <li>Source de surprise - et donc d'erreur -</li>
-            <li>Encodable dans des types</li>
-            <li>Monad Transformers et Eff</li>
+            <li class="fragment">Source de surprise - et donc d'erreur -</li>
+            <li class="fragment">Encodable dans des types</li>
+            <li class="fragment">Monad Transformers, Eff, etc.</li>
           </ul>
+        </section>
+
+        <section>
+          <h2>Question&nbsp;?</h2>
+          <a href="https://blemoine.github.io/scala-io-effects/#/">https://blemoine.github.io/scala-io-effects</a>
         </section>
 			</div>
 		</div>
