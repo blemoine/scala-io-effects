@@ -382,6 +382,23 @@ def sell(coin: Coin): State[Int, CanOrErr] = State { stock =>
           </code></pre>
         </section>
 
+
+        <section>
+          <h2>Exemple</h2>
+            <pre><code class="scala" data-trim>
+def purePrint(str: String): IO[Unit] = IO(str)
+def pureRnd(): IO[Int] = IO(Random.nextInt())
+
+val sum: IO[Int] = for {
+  n1 <- pureRnd()
+  _ <- purePrint(n1.toString)
+  n2 <- pureRnd()
+} yield r1 + r2
+
+sum.unsafeRunSync()
+            </code></pre>
+        </section>
+
         <section>
           <h2>Controverse</h2>
           <ul>
@@ -463,10 +480,12 @@ val eventualMaybeCoin: Future[Option[Coin]] = {
           import cats.data.OptionT
           -->
           <pre><code class="scala" data-trim>
+                  import cats.data.OptionT
+
                   val eventualMaybeCoin: OptionT[Future, Coin] = for {
                     coin <- OptionT.fromOption[Future](Pocket.getCoin())
-                    snack <- OptionT(Api.getASnack(coin))
-                    newCoin <- OptionT(Trash.recycle(snack))
+                    can <- OptionT(Api.getACan(coin))
+                    newCoin <- OptionT(Trash.recycle(can))
                   } yield {
                     newCoin
                   }
@@ -484,6 +503,57 @@ val eventualMaybeCoin: Future[Option[Coin]] = {
           </ul>
         </section>
 
+        <section>
+          <h2>Exemple - Map</h2>
+          <pre class="fragment current-visible" style="position:absolute;"><code class="scala" data-trim>
+def double(p: Future[Option[Int]]): Future[Option[Int]] = {
+  p.map(maybeI => maybeI.map(i => i * 2))
+}
+</code></pre>
+<pre class="fragment"><code class="scala" data-trim>
+def double(p: Future[Option[Int]]): Future[Option[Int]] = {
+    p.map(_.map(_ * 2))
+}
+          </code></pre>
+          <pre class="fragment"><code class="scala" data-trim>
+def double(p: Future[Option[Int]]): Future[Option[Int]] = {
+  OptionT(p).map(_ * 2).value
+}
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Exemple - FlatMap</h2>
+          <pre class="fragment current-visible" style="position:absolute;"><code class="scala" data-trim>
+type FutureOpt[A] = Future[Option[A]]
+def add(p1:FutureOpt[Int], p2:FutureOpt[Int]):FutureOpt[Int] =
+  p1.flatMap { maybeI1 =>
+    p2.map { maybeI2 =>
+       maybeI1.flatMap(i1 => maybeI2.map(i2 => i1 + i2))
+    }
+  }
+
+  </code></pre>
+<pre class="fragment"><code class="scala" data-trim>
+type FutureOpt[A] = Future[Option[A]]
+def add(p1:FutureOpt[Int], p2:FutureOpt[Int]):FutureOpt[Int] =
+  for {
+    maybeI1 <- p1
+    maybeI2 <- p2
+  } yield for {
+    i1 <- maybeI1
+    i2 <- maybeI2
+  } yield i1 + i2
+          </code></pre>
+          <pre class="fragment"><code class="scala" data-trim>
+def add(p1:FutureOpt[Int], p2:FutureOpt[Int]):FutureOpt[Int] = {
+  for {
+    i1 <- OptionT(p1)
+    i2 <- OptionT(p2)
+  } yield i1 + i2
+}
+          </code></pre>
+        </section>
 
         <section>
           <h2>Monad Transformers</h2>
