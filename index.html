@@ -7,10 +7,10 @@
 		<title>Survivre à un monde débordant</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css">
+		<link rel="stylesheet" href="css/theme/white.css">
 
 		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+		<link rel="stylesheet" href="lib/css/vs.css">
 
 		<!-- Printing and PDF exports -->
 		<script>
@@ -25,9 +25,17 @@
 	</head>
 	<body>
 		<div class="reveal">
+      <header style="position: absolute;top: 0; width:100%; z-index:500; height:35px; ;background-color: black;">
+        <img src="images/scalaio.png" />
+      </header>
+      <footer id="footer-sponsor" style="width:100%; position:absolute; bottom:0;">
+      <img src="images/sponsor.png" style="width:100%;"/>
+    </footer>
+
 			<div class="slides">
 				<section>
           <h1>Survivre à un monde débordant <em>d'effets</em></h1>
+
         </section>
 
         <section>
@@ -36,7 +44,7 @@
             <li>Benoît Lemoine</li>
             <li>@benoit_lemoine</li>
             <li>Développeur full-stack chez <a href="http://mnubo.com">Mnubo</a>, à Montréal</li>
-            <li><strong>Nous recrutons&nbsp;!</strong></li>
+            <li><strong>Nous recrutons&nbsp;!</strong> blemoine@mnubo.com</li>
           </ul>
         </section>
 
@@ -280,7 +288,7 @@ def impureAdd(i: Int, j:Int): Int = {
             <li>Parallélisme</li>
           </ul>
           <p>
-          TODO PHOTOSHOP d'une vending machine avec 2 coté / parallelisme?
+
         </p>
         </section>
 
@@ -497,9 +505,9 @@ val eventualMaybeCoin: Future[Option[Coin]] = {
         <section>
           <h2>Monad Transformers</h2>
           <ul>
-            <li>Un type monadique</li>
+            <li>Un type</li>
             <li>représentant la combinaison d'un type représentant un effet</li>
-            <li>avec un type monadique</li>
+            <li>avec un type</li>
           </ul>
         </section>
 
@@ -713,6 +721,11 @@ add[Stack](Some(1), Left("err")).runOption.runEither.run
 					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
 				]
 			});
+      Reveal.addEventListener( 'slidechanged', function( event ) {
+
+        document.getElementById('footer-sponsor').style.display = Reveal.isFirstSlide()?'block':'none';
+
+      });
 		</script>
 	</body>
 </html>
