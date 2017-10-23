@@ -423,12 +423,12 @@ sum.unsafeRunSync()
         <section>
           <h2>Side Effect ~ type</h2>
           <ul>
-            <li class="fragment"><code class="scala" style="background:#3f3f3f">Option</code>&nbsp;: arrêt prématuré</li>
-            <li class="fragment"><code class="scala" style="background:#3f3f3f">Either</code>&nbsp;: arrêt prématuré avec une raison</li>
-            <li class="fragment"><code class="scala" style="background:#3f3f3f">Future</code>&nbsp;: asynchronisme</li>
-            <li class="fragment"><code class="scala" style="background:#3f3f3f">cats.data.Writer</code>:&nbsp;: écrire quelque part</li>
-            <li class="fragment"><code class="scala" style="background:#3f3f3f">cats.data.Reader</code>&nbsp;: lire de quelque part</li>
-            <li class="fragment"><code class="scala" style="background:#3f3f3f">cats.data.State</code>&nbsp;: modifier un état interne</li>
+            <li class="fragment"><code class="scala" style="background:#fafafa">Option</code>&nbsp;: arrêt prématuré</li>
+            <li class="fragment"><code class="scala" style="background:#fafafa">Either</code>&nbsp;: arrêt prématuré avec une raison</li>
+            <li class="fragment"><code class="scala" style="background:#fafafa">Future</code>&nbsp;: asynchronisme</li>
+            <li class="fragment"><code class="scala" style="background:#fafafa">cats.data.Writer</code>:&nbsp;: écrire quelque part</li>
+            <li class="fragment"><code class="scala" style="background:#fafafa">cats.data.Reader</code>&nbsp;: lire de quelque part</li>
+            <li class="fragment"><code class="scala" style="background:#fafafa">cats.data.State</code>&nbsp;: modifier un état interne</li>
           </ul>
         </section>
 
@@ -555,10 +555,10 @@ def add(p1:FutureOpt[Int], p2:FutureOpt[Int]):FutureOpt[Int] =
           </code></pre>
           <pre class="fragment"><code class="scala" data-trim>
 def add(p1:FutureOpt[Int], p2:FutureOpt[Int]):FutureOpt[Int] = {
-  for {
+  (for {
     i1 <- OptionT(p1)
     i2 <- OptionT(p2)
-  } yield i1 + i2
+  } yield i1 + i2).value
 }
           </code></pre>
         </section>
