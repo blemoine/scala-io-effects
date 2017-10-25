@@ -384,6 +384,10 @@ def sell(coin: Coin): State[Int, CanOrErr] = State { stock =>
 
         <section>
           <h2>Les IOs</h2>
+        </section>
+
+        <section>
+          <h2>Les IOs</h2>
           <a href="https://github.com/typelevel/cats-effect">https://github.com/typelevel/cats-effect</a>
           <pre><code class="scala" data-trim>
             type IO[A] ~ (RealWorld) => (RealWorld, A)
@@ -394,7 +398,7 @@ def sell(coin: Coin): State[Int, CanOrErr] = State { stock =>
         <section>
           <h2>Exemple</h2>
             <pre><code class="scala" data-trim>
-def purePrint(str: String): IO[Unit] = IO(str)
+def purePrint(str: String): IO[Unit] = IO(println(str))
 def pureRnd(): IO[Int] = IO(Random.nextInt())
 
 val sum: IO[Int] = for {
